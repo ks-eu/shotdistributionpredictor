@@ -59,7 +59,7 @@ def get_complete_carries(event_df):
     # logic determining if carry events chain
     chain_continues = (time_diff <= 0.150) & (spatial_diff <= 0.5) & (player_diff)
     chain_starts = ~chain_continues.shift(1, fill_value=False)
-    carry_events['chain_id'] = chain_starts.cumsum()
+    carry_events['carry_chain_id'] = chain_starts.cumsum()
 
     # add a total carry column, and list aggregation rules for each column
     carry_events['total_carries'] = 1
@@ -78,9 +78,49 @@ def get_complete_carries(event_df):
     })
 
     # generate a dataframe of the complete carry events
-    complete_carries = carry_events.groupby('chain_id', as_index=False).agg(agg_rules)
+    complete_carries = carry_events.groupby('carry_chain_id', as_index=False).agg(agg_rules)
     complete_carries['type'] = 'Complete Carry'
-
+    complete_carries['carry_end_matchseconds'] = complete_carries['match_seconds'] + complete_carries['duration']
     # concatenate the dataframes
     df = pd.concat([df, complete_carries], ignore_index = True)
+    return df
+
+
+def get_carry_outcome(event_df):
+    RELEASE_EVENTS = ['Pass', 'Shot', 'Complete Carry']
+
+    df = event_df.copy()
+    main_release = df[df['type'].isin(RELEASE_EVENTS)].copy()
+
+    next_release = main_release.shift(-1).copy()
+    time_diff = next_release['match_seconds'] - main_release['carry_end_seconds']
+    spatial_diff = np.sqrt(
+        ((main_release['end_x'] - next_release['x'])**2) +
+        ((main_release['end_y'] - next_release['y'])**2)
+    )
+    player_diff = (main_release['player_id'] == next_release['player_id'])
+    next_type = next_release['type']
+
+    chain_continues = (time_diff <= 0.150) & (spatial_diff <= 0.5) & (player_diff)
+    chain_starts = ~chain_continues.shift(1, fill_value=False)
+    main_release['release_chain_id'] = chain_starts.cumsum()
+    main_release['next_type'] = next_type
+
+    next_release_2 = main_release.shift(-1).copy()
+    chain_match = (main_release['release_chain_id'] == next_release_2['release_chain_id'])
+    main_release['release_next_chain'] = chain_match
+
+    main_release = main_release[main_release['type'] == 'Complete Carry']
+
+    main_release['carry_end_outcome'] = np.where(
+        main_release['release_next_chain'] == True, 
+        main_release['next_type'], 
+        'Other'
+    )
+
+    df['carry_outcome'] = np.nan
+    carry_mask = df['type'].to_numpy() == 'Complete Carry'
+
+    df.loc[carry_mask, 'carry_end_outcome'] = main_release['carry_end_outcome'].to_numpy()
+
     return df

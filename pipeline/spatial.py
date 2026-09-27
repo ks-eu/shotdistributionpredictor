@@ -32,7 +32,7 @@ def y_quad_average(event_df, step_length = 1, window_rad = 2.5, x_name = 'x', y_
 
     x_vals = xy_grid[:, 0]
     y_vals = xy_grid[:, 1]
-    
+
     fit_mask = ~np.isnan(y_vals)
     fit_x = x_vals[fit_mask]
     fit_y = y_vals[fit_mask]
@@ -44,7 +44,8 @@ def y_quad_average(event_df, step_length = 1, window_rad = 2.5, x_name = 'x', y_
     return [a, b, c]
 
 
-def get_normalised_y(event_df, step_length = 1, window_rad = 2.5, x_name = 'x', y_name = 'y'):
+# to do: docstring and using a second copy so that we dont have to attach all extra columns
+def get_normalised_y(event_df, step_length = 1, window_rad = 2.5, x_name = 'x', y_name = 'y', columnname = 'normalised_y'):
     UPPER = 120
     LOWER = 0
 
@@ -62,7 +63,7 @@ def get_normalised_y(event_df, step_length = 1, window_rad = 2.5, x_name = 'x', 
     )
 
     with np.errstate(divide="ignore", invalid="ignore"):
-        df["normalised_y"] = np.where(
+        df[columnname] = np.where(
             df["boundary_distance"] > 0,
             np.abs(df["y_distance"] / df["boundary_distance"]),
             0,
