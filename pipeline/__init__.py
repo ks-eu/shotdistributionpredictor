@@ -1,6 +1,6 @@
 """Public pipeline functions for shot distribution prediction."""
 
-from pipeline.carry import get_complete_carries
+from pipeline.carry import get_carry_outcome, get_complete_carries
 from pipeline.lpevents import (
                                 get_events_from_timeline,
                                 get_lineup_events,
@@ -9,6 +9,7 @@ from pipeline.lpevents import (
 from pipeline.utils import get_team_matchids, get_teams, spatial_unpack
 
 __all__ = [
+                                "get_carry_outcome",
                                 "get_complete_carries",
                                 "get_events_from_timeline",
                                 "get_lineup_events",

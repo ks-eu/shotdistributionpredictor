@@ -1,6 +1,6 @@
 """Utilities for fetching data from StatsBomb API."""
 
-import numpy as np  # noqa: F401
+import numpy as np
 import pandas as pd
 from statsbombpy import sb
 

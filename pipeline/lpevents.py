@@ -168,37 +168,6 @@ def get_events_from_timeline(team_id, match_id):
     events_lineup_df['match_seconds'] = events_lineup_df['match_time'].dt.total_seconds()
 
     return events_lineup_df
-    """
-    # match each event with the teamsheet and mandown state at the time of the event
-    event_teamsheets = []
-    event_mandown = []
-    for idx, event in events_df.iterrows():
-        event_period = event['period']
-        event_time = event['timestamp']
-
-        # we get a list of lineup events occuring before the events, within the same game period
-        # the game period corresponds to game halves
-        #
-        # if there are no lineup events, occuring before the event, check the previous period
-        # since we only consider league matches, there is always a starting lineup event, so we
-        # will always find a corresponding teamsheet in the previous period (which can only ever
-        # be the first half)
-        past_events = lineup_events[
-            (lineup_events['period'] == event_period) &
-            (lineup_events['timestamp'] <= event_time)
-        ]
-
-        if len(past_events) > 0:
-            active_state = past_events.iloc[-1]
-        else:
-            active_state = lineup_events[(lineup_events['period'] == event_period - 1)].iloc[-1]
-
-        event_teamsheets.append(active_state['teamsheet'])
-        event_mandown.append(active_state['mandown'])
-
-    events_df['teamsheet'] = event_teamsheets
-    events_df['mandown'] = event_mandown
-    """
 
 
 def get_teamseason_matchevents(comp_id, season_id, team_id):
