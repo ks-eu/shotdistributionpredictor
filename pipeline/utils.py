@@ -1,7 +1,7 @@
 """Utilities for fetching data from StatsBomb API."""
 
 import numpy as np  # noqa: F401
-import pandas as pd  # noqa: F401
+import pandas as pd
 from statsbombpy import sb
 
 
@@ -40,3 +40,18 @@ def get_team_matchids(comp_id, season_id, team_id):
                                       == team_id)]
                     .reset_index(drop=True))
     return team_matches['match_id'].to_list()
+
+
+def spatial_unpack(event_df, targetcolumn = 'location', x_name = 'x', y_name = 'y'):
+    """Return dataframe with spatial data unpacked as 2 columns.
+    
+    Arguments:
+    event_df: StatsBomb Event dataframe
+    targetcolumn: Name of the column with spatial coordinates that need unpacking
+    x_name: Name of the new x coordinate column
+    y_name: Name of the new y coordiante_column
+    
+    """
+    df = event_df.copy()
+    df[[x_name, y_name]] = pd.DataFrame(df[targetcolumn].tolist(), index=df.index)
+    return df

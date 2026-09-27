@@ -150,7 +150,7 @@ def get_lineup_events(event_df):
 
 
 def get_events_from_timeline(team_id, match_id):
-    """Return dataframe of events for a given team and match attached with match time, teamsheet and mandown information for each event.
+    """Return dataframe of events for a given team and match attached with match time, match seconds, teamsheet and mandown information for each event.
     
     Arguments:
     team_id: StatsBomb team ID
@@ -165,6 +165,7 @@ def get_events_from_timeline(team_id, match_id):
     lineup_events = get_lineup_events(events_df)
     lineup_events = lineup_events[['match_time', 'teamsheet', 'mandown']]
     events_lineup_df = pd.merge_asof(events_df, lineup_events, on = 'match_time')
+    events_lineup_df['match_seconds'] = events_lineup_df['match_time'].dt.total_seconds()
 
     return events_lineup_df
     """
