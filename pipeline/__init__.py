@@ -6,7 +6,7 @@ from pipeline.lpevents import (
                                 get_lineup_events,
                                 get_teamseason_matchevents,
 )
-from pipeline.utils import get_team_matchids, get_teams
+from pipeline.utils import get_team_matchids, get_teams, spatial_unpack
 
 __all__ = [
                                 "get_complete_carries",
@@ -15,4 +15,5 @@ __all__ = [
                                 "get_team_matchids",
                                 "get_teams",
                                 "get_teamseason_matchevents",
+                                "spatial_unpack"
 ]

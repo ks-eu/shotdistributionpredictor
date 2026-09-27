@@ -53,5 +53,12 @@ def spatial_unpack(event_df, targetcolumn = 'location', x_name = 'x', y_name = '
     
     """
     df = event_df.copy()
+
+    # 1. Replace missing/NaN entries with a [NaN, NaN] list fallback
+    has_loc = df[targetcolumn].notna()
+    df[targetcolumn] = np.where(
+        has_loc, df[targetcolumn], pd.Series([[np.nan, np.nan]] * len(df), index=df.index)
+    )
+
     df[[x_name, y_name]] = pd.DataFrame(df[targetcolumn].tolist(), index=df.index)
     return df
