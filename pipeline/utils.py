@@ -62,3 +62,19 @@ def spatial_unpack(event_df, targetcolumn = 'location', x_name = 'x', y_name = '
 
     df[[x_name, y_name]] = pd.DataFrame(df[targetcolumn].tolist(), index=df.index)
     return df
+
+
+# might need to change how this works (either force column to be string or change to a dict comprehension)
+def get_ff_outcome(event_df):
+    """Add ff_outcome column to an event dataframe.
+    
+    Arguments:
+    event_df: StatsBomb event dataframe
+    
+    """ 
+    df = event_df.copy()
+    ff_value = df["50_50"].str.extract(
+        r"'name':\s*([^}]+)"
+    )
+    df['ff_outcome'] = ff_value
+    return df
