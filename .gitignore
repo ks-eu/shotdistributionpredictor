@@ -1,0 +1,13 @@
+# Ignore DuckDB databases and write-ahead log (WAL) files
+*.db
+*.db.wal
+*.bak
+
+# Ignore specific database directories
+data/events.db
+
+# Python & Environment ignores
+__pycache__/
+.venv/
+.env
+.ipynb_checkpoints/
