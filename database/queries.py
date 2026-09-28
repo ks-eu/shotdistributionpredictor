@@ -16,7 +16,7 @@ def _type_param(type_param : tuple = ()):
         t = str(type_param[0])
         n = str(type_param[1])
         v = str(type_param[2])
-        return f"(type = {t} AND {n} = {v})"
+        return f"(type = '{t}' AND '{n}' = '{v}')"
     else:
         return ""
 
@@ -26,7 +26,7 @@ def _type_noparam(type_noparam : str = ""):
     if type_noparam == "":
         return type_noparam
     else:
-        return f"(type = {type_noparam})"
+        return f"(type = '{type_noparam}')"
 
 
 def _col_param(col_param : tuple = ()):
@@ -34,15 +34,16 @@ def _col_param(col_param : tuple = ()):
     if len(col_param) == 2:
         n = str(col_param[0])
         v = str(col_param[1])
-        return f"({n} = {v})"
+        return f"('{n}' = '{v}')"
     else:
         return ""
 
 def player_match_query(player_id : float, match_id : int, columns : list = [], type_params : list = [], type_noparams : list = [], col_params : list = []):
+    """Take player_id and match_id and return SQL Query matching given parameters."""
     INIT_FROM = "FROM events"
-    init_select = _col_param(columns = columns)
+    init_select = _select_column(columns = columns)
 
-    main_query = init_select + ' ' + INIT_FROM + f" WHERE (player_id = {player_id}) AND (match_id = {match_id}) AND "
+    main_query = init_select + ' ' + INIT_FROM + f" WHERE (player_id = {player_id}) AND (match_id = {match_id})"
 
     or_clauses = []
     for type_param in type_params:
@@ -72,4 +73,4 @@ def player_match_query(player_id : float, match_id : int, columns : list = [], t
         combined_or = " OR ".join(or_clauses)
         main_query = f"{main_query} AND ({combined_or})"
 
-    return main_query + ';'
+    return main_query + ' ORDER BY match_seconds ASC;'
