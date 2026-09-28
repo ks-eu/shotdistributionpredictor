@@ -2,7 +2,6 @@
 
 import numpy as np
 import pandas as pd
-from statsbombpy import sb
 
 
 def average_y(event_df, step_length = 1, window_rad = 2.5, x_name = 'x', y_name = 'y'):

@@ -2,7 +2,6 @@
 
 import numpy as np
 import pandas as pd
-from statsbombpy import sb  # noqa: F401
 
 from pipeline.lpevents import get_uniquelineups
 
