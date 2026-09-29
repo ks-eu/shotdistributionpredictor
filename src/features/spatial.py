@@ -16,8 +16,10 @@ def _tm_opreceptions(team_id : int, match_id : int, threads : int = 1):
         team_id = ("team_id", "first"),
         match_id = ("match_id", "first"),
         player = ("player", "first"),
+        position =("position", "first"),
         total_reception_events=("player_id", "size"),
         average_reception_x=("x", "mean"),
+        average_reception_y=("y", "mean"),
         average_reception_norm_y=("normalised_y", "mean")
     )
     return op_rec_grouped
@@ -30,7 +32,8 @@ def _tm_opreleases(team_id : int, match_id : int, threads : int = 1):
     op_rel_grouped = op_rel.groupby("player_id").agg(
         total_release_events = ("player_id", "size"),
         average_release_x = ("x", "mean"),
-        average_release_norm_y = ("y", "mean")
+        average_release_y=("y", "mean"),
+        average_release_norm_y = ("normalised_y", "mean")
     )
     return op_rel_grouped
 

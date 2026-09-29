@@ -50,7 +50,6 @@ def optbl_build(team_match_ids):
     print(f'Found {batch_len} team-match pairs to process')
     print()
 
-    con = duckdb.connect(DB_PATH)
     for row in iter_df.itertuples():
         print(f'Processing Batch {row.Index+1}/{batch_len}:')
         team_id = row.team_id
@@ -62,7 +61,7 @@ def optbl_build(team_match_ids):
                 print(f'  Player Dataframe empty for: Team {team_id}, Match {match_id}')
                 print('  Moving to next team-match pair')
                 print()
-
+            con = duckdb.connect(DB_PATH)
             con.execute('CREATE TABLE IF NOT EXISTS opspatial AS SELECT * FROM current_df WHERE 1=0;')
 
             db_cols = {
@@ -85,13 +84,14 @@ def optbl_build(team_match_ids):
 
             print(f'  Inserted processed event data for: Team {team_id}, Match {match_id}')
             print()
-
+            con.close()
         except Exception as e:
             error_msg = f"  Failed Match: {match_id}, Team: {team_id}. Error: {str(e)}"
             print(f"{error_msg}")
             skipped_team_matches.append(
                 {"team_id": team_id, "match_id": match_id, "error": str(e)}
             )
+            con.close()
             print('  Moving to next team-match pair')
             print()
             continue
@@ -127,7 +127,7 @@ def main():
     print()
 
     try:
-        team_match_ids = team_match_pairs()
+        team_match_ids = team_match_pairs(COMP_IDS, SEASON_ID)
     except Exception as e:
         print(f'Failed retrieving team-match pairs: Error {str(e)}')
         print('Ending Program')
