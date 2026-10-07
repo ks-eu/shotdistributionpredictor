@@ -1,6 +1,7 @@
 """Utilities for Lineup Information."""
 
 # this probably needs some work but this is more so for exploratory analysis
+# this is a bad function, change it
 def get_uniquelineups(event_df):  # noqa D103
     unique_lineups = event_df['teamsheet'].unique()
 

@@ -5,11 +5,10 @@ import pandas as pd
 from statsbombpy import sb
 
 from src.pipeline.matchtime import get_match_time
-from src.pipeline.utils import get_team_matchids
 
 
 def get_teamsheet(lineup):
-    """Return frozenset representing a teamsheet.
+    """Return list representing a teamsheet.
     
     Arguments:
     lineup: Dictionary from StatsBomb event data, from the 'tactics' column of a Starting XI event.
@@ -19,12 +18,12 @@ def get_teamsheet(lineup):
     """
     player_data = set()
     for player in lineup['lineup']:
-        player_data.add((str(player['player']['id']), player['player']['name']))
-    return frozenset(player_data)
+        player_data.add(player['player']['id'])
+    return sorted(list(player_data))
 
 
-def sub_teamsheet(lineup, subin_id, subin_name, subout_id, subout_name):
-    """Return frozenset representing a teamsheet after a substitution.
+def sub_teamsheet(lineup, subin_id, subout_id):
+    """Return tuple representing a teamsheet after a substitution.
     
     Arguments:
     lineup: Current teamsheet as a frozenset.
@@ -35,13 +34,13 @@ def sub_teamsheet(lineup, subin_id, subin_name, subout_id, subout_name):
 
     """
     mut_lineup = set(lineup)
-    mut_lineup.remove((str(int(subout_id)), subout_name))
-    mut_lineup.add((str(int(subin_id)), subin_name))
-    return frozenset(mut_lineup)
+    mut_lineup.remove(int(subout_id))
+    mut_lineup.add(int(subin_id))
+    return sorted(list(mut_lineup))
 
 
-def playeroff_teamsheet(lineup, out_id, out_name):
-    """Return frozenset representing a teamsheet after a player is substituted off.
+def playeroff_teamsheet(lineup, out_id):
+    """Return tuple representing a teamsheet after a player is substituted off.
 
     Arguments:
     lineup: Current teamsheet as a frozenset.
@@ -50,11 +49,11 @@ def playeroff_teamsheet(lineup, out_id, out_name):
 
     """
     mut_lineup = set(lineup)
-    mut_lineup.remove((str(int(out_id)), out_name))
-    return frozenset(mut_lineup)
+    mut_lineup.remove(int(out_id))
+    return sorted(list(mut_lineup))
 
 
-def playeron_teamsheet(lineup, on_id, on_name):
+def playeron_teamsheet(lineup, on_id):
     """Return frozenset representing a teamsheet after a player is substituted on.
 
     Arguments:
@@ -64,8 +63,8 @@ def playeron_teamsheet(lineup, on_id, on_name):
 
     """
     mut_lineup = set(lineup)
-    mut_lineup.add((str(int(on_id)), on_name))
-    return frozenset(mut_lineup)
+    mut_lineup.add(int(on_id))
+    return sorted(list(mut_lineup))
 
 
 def mandown_teamsheet(lineup):
@@ -113,23 +112,17 @@ def get_lineup_events(event_df):
 
         elif event_type == 'Substitution':
             subout_id = row['player_id']
-            subout_name = row['player']
             subin_id = row['substitution_replacement_id']
-            subin_name = row['substitution_replacement']
             teamsheets.append(sub_teamsheet(teamsheets[idx - 1], subin_id,
-                                            subin_name, subout_id, subout_name))
+                                            subout_id))
 
         elif event_type == 'Player Off':
             out_id = row['player_id']
-            out_name = row['player']
-            teamsheets.append(playeroff_teamsheet(teamsheets[idx - 1], out_id,
-                                                  out_name))
+            teamsheets.append(playeroff_teamsheet(teamsheets[idx - 1], out_id))
 
         elif event_type == 'Player On':
             on_id = row['player_id']
-            on_name = row['player']
-            teamsheets.append(playeron_teamsheet(teamsheets[idx - 1], on_id,
-                                                 on_name))
+            teamsheets.append(playeron_teamsheet(teamsheets[idx - 1], on_id))
 
         elif event_type == 'Half End':
             teamsheets.append(teamsheets[idx - 1])
@@ -168,29 +161,3 @@ def get_events_from_timeline(team_id, match_id):
     events_lineup_df['match_seconds'] = events_lineup_df['match_time'].dt.total_seconds()
 
     return events_lineup_df
-
-
-def get_teamseason_matchevents(comp_id, season_id, team_id):
-    """Return dataframe of events with teamsheets attached for a given team over a season.
-    
-    Arguments:
-    comp_id: StatsBomb competition ID
-    season_id: StatsBomb season ID
-    team_id: StatsBomb team ID
-
-    """
-    # get list of match IDs for the team over the season
-    team_matchids = get_team_matchids(comp_id, season_id, team_id)
-
-    games = len(team_matchids)
-    print(f'Found {games} games for the season')
-
-    # get shot events with teamsheets for the first game, which serves as initial dataframe for concatenation
-    team_events = get_events_from_timeline(team_id, team_matchids[0])
-    print(f'Processed match event data for game 1/{games}')
-
-    # concatenating shot events with teamsheets for the other games played in the season (probably a pandas way to do this better)
-    for id_x, id_game in enumerate(team_matchids[1:]):
-        team_events = pd.concat([team_events, get_events_from_timeline(team_id, id_game)])
-        print(f'Processed match event data for game {id_x + 2}/{games}')
-    return team_events

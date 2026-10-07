@@ -172,7 +172,7 @@ def main():
     print()
 
     try:
-        team_match_ids = team_match_pairs()
+        team_match_ids = team_match_pairs(COMP_IDS, SEASON_ID)
     except Exception as e:
         print(f'Failed retrieving team-match pairs: Error {str(e)}')
         print('Ending Program')
