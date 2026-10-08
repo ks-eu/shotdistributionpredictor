@@ -34,12 +34,15 @@ def get_team_matchids(comp_id, season_id, team_id):
     """
     season_matches = sb.matches(competition_id=comp_id,
                                 season_id=season_id)
+    season_matches["match_date"] = pd.to_datetime(season_matches["match_date"])
     team_matches = (season_matches[(season_matches['home_team_id']
                                     == team_id)
                                    | (season_matches['away_team_id']
                                       == team_id)]
                     .reset_index(drop=True))
-    return team_matches['match_id'].to_list()
+    team_matches = team_matches.sort_values(by = "match_date").reset_index(drop=True)
+    team_matches["matchweek"] = range(1, len(team_matches)+1)
+    return team_matches[["match_id", "matchweek"]]
 
 
 def spatial_unpack(event_df, targetcolumn = 'location', x_name = 'x', y_name = 'y'):
@@ -99,11 +102,9 @@ def team_match_pairs(comp_ids : list, season_id : int):
         team_id = row.team_id
         competition_id = row.competition_id
 
-        matches = get_team_matchids(competition_id, season_id, team_id)
-        num_matches = len(matches)
+        current_matches = get_team_matchids(competition_id, season_id, team_id)
+        num_matches = len(current_matches)
         print(f'Team {team_id} played {num_matches} matches')
-
-        current_matches = pd.DataFrame({'match_id': matches})
         current_matches['team_id'] = team_id
 
         match_team_pairs.append([current_matches, num_matches])

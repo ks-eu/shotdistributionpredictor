@@ -37,7 +37,7 @@ THREAD_COUNT = 6
 # MAIN PIPELINE METHODS/FUNCTIONS
 
 
-def get_match_events(team_id, match_id):
+def get_match_events(team_id, match_id, matchweek):
     """Return processed event dataframe for a given match and team.
     
     Arguments:
@@ -53,12 +53,17 @@ def get_match_events(team_id, match_id):
     df = spatial_unpack(df)
     print('    2) Unpacked location into x and y columns')
 
+    df = spatial_unpack(df, targetcolumn = "pass_end_location", x_name = "pass_end_x", y_name = "pass_end_y")
+    print('    3) Unpacked pass_end_location into pass_end_x and pass_end_y columns')
+
     df = get_complete_carries(df)
-    print('    3.1) Unpacked carry_end_location into end_x and end_y columns')
-    print('    3.2) Added carry_distance column, Complete Carry rows with carry_end_matchseconds and total_carries columns')
+    print('    4.1) Unpacked carry_end_location into end_x and end_y columns')
+    print('    4.2) Added carry_distance column, Complete Carry rows with carry_end_matchseconds and total_carries columns')
 
     df = get_carry_outcome(df)
     print('    4) Added carry_outcome column to complete carry events')
+
+    df["matchweek"] = matchweek
 
     print(f'  Finished processing {match_id} for team {team_id}')
     print()
@@ -99,9 +104,10 @@ def database_build(team_match_ids, db_con):
         print(f'Processing Batch {row.Index+1}/{batch_len}:')
         team_id = row.team_id
         match_id = row.match_id
+        matchweek = row.matchweek
 
         try:
-            current_df = get_match_events(team_id, match_id)
+            current_df = get_match_events(team_id, match_id, matchweek)
             if current_df.empty:
                 print(f'  Event Dataframe empty for: Team {team_id}, Match {match_id}')
                 print('  Moving to next team-match pair')
